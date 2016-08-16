@@ -1,10 +1,21 @@
 {
-    "telegram_api_token":"245239625:AAEkl-oGo5_dnVEFvVVxbk6weyKG3mBmmgE",
+    "telegram_api_token2":"245239625:AAEkl-oGo5_dnVEFvVVxbk6weyKG3mBmmgE",
+    "telegram_api_token":"236027990:AAHLsE5O1MOlP91JmpffgJVedxtdq-NkCsk",
     "yandex_api_token":"f567df27-cfd5-4973-9601-e9ebb2f4cff7",
     "yandex_speech_request":"https://vins-markup.voicetech.yandex.net/markup/0.x/?text={0}&key={1}",
     "WEBHOOK_HOST":"62.109.4.133",
     "WEBHOOK_PORT":443,
     "WEBHOOK_LISTEN":"0.0.0.0",
     "WEBHOOK_SSL_CERT":"calendar_bot_cert.pem",
-    "WEBHOOK_SSL_PRIV":"calendar_bot_pkey.pem"
+    "WEBHOOK_SSL_PRIV":"calendar_bot_pkey.pem",
+    "message_examples_hint" : [
+        "Сегодня опоздаю",
+        "Совещание в 15:30",
+        "Буду в 10:30",
+        "Сегодня приболел",
+        "Завтра нужно зайти в посольство, буду к 12:30",
+        "Сегодня ухожу пораньше",
+        "Командировка с 10.08 по 17.08",
+        "Опаздываю. Пробка."
+    ]
 }
