@@ -1,0 +1,10 @@
+{
+    "telegram_api_token":"245239625:AAEkl-oGo5_dnVEFvVVxbk6weyKG3mBmmgE",
+    "yandex_api_token":"f567df27-cfd5-4973-9601-e9ebb2f4cff7",
+    "yandex_speech_request":"https://vins-markup.voicetech.yandex.net/markup/0.x/?text={0}&key={1}",
+    "WEBHOOK_HOST":"62.109.4.133",
+    "WEBHOOK_PORT":443,
+    "WEBHOOK_LISTEN":"0.0.0.0",
+    "WEBHOOK_SSL_CERT":"calendar_bot_cert.pem",
+    "WEBHOOK_SSL_PRIV":"calendar_bot_pkey.pem"
+}
