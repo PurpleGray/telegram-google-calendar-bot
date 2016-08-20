@@ -3,6 +3,7 @@ import json
 config_name = "config.json"
 
 class Config(object):
+
     __instance = None
 
     @staticmethod
