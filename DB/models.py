@@ -1,10 +1,10 @@
 from peewee import *
-import DB
 
 
 class BaseModel(Model):
     class Meta:
-        database = DB.botdatabase.DataBase.instance()
+        from DB import botdatabase
+        database = botdatabase.DataBase.instance().db
 
 
 class Event(BaseModel):
@@ -17,7 +17,6 @@ class Chat(BaseModel):
 
     chat_id = CharField(unique=True)
     google_calendar_id = CharField(unique=True)
-
 
 
 class Person(BaseModel):
