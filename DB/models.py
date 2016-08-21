@@ -1,13 +1,16 @@
+import datetime
+
 from peewee import *
 
+from app import db
 
-class BaseModel(Model):
+
+class BaseModel(db.Model):
     class Meta:
-        from DB import botdatabase
-        database = botdatabase.DataBase.instance().db
+        database = db
 
 
-class Event(BaseModel):
+class CalendarEvent(BaseModel):
 
     event_date = DateTimeField()
     event_message = CharField()
@@ -17,6 +20,7 @@ class Chat(BaseModel):
 
     chat_id = CharField(unique=True)
     google_calendar_id = CharField(unique=True)
+    join_date = DateTimeField(default=datetime.datetime.now)
 
 
 class Person(BaseModel):

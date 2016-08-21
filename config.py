@@ -18,3 +18,12 @@ class Config(object):
             self.WEBHOOK_URL_BASE = "https://{0}:{1}".format(self.__dict__["WEBHOOK_HOST"], self.__dict__["WEBHOOK_PORT"])
             self.WEBHOOK_URL_PATH =  "/{0}/".format(self.__dict__["telegram_api_token"])
             file.close()
+
+class Configuration(object):
+    DATABASE = {
+        'name': Config.instance().db_path,
+        'engine': 'peewee.SqliteDatabase',
+        'check_same_thread': False
+    }
+    DEBUG = False
+
