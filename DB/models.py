@@ -5,27 +5,25 @@ from peewee import *
 from app import db
 
 
-class BaseModel(db.Model):
-    class Meta:
-        database = db
+class Chat(db.Model):
 
-
-class CalendarEvent(BaseModel):
-
-    event_date = DateTimeField()
-    event_message = CharField()
-
-
-class Chat(BaseModel):
-
-    chat_id = CharField(unique=True)
+    chat_id = IntegerField(unique=True)
     google_calendar_id = CharField(unique=True)
     join_date = DateTimeField(default=datetime.datetime.now)
 
 
-class Person(BaseModel):
+class CalendarEvent(db.Model):
 
-    chat_membership = ForeignKeyField(Chat, related_name='persons')
+    event_date = DateTimeField()
+    event_message = CharField()
+    from_chat = ForeignKeyField(Chat, related_name='events', unique=True)
+
+
+class User(db.Model):
+
+    user_id = IntegerField(unique=True)
+    join_date = DateTimeField(default=datetime.datetime.now)
+    chat_membership = ForeignKeyField(Chat, related_name='users')
 
 
 
