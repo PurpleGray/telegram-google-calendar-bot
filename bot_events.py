@@ -6,6 +6,8 @@ from DB.models import  *
 
 from telebot import *
 
+import bot_utils
+
 import random
 
 import string
@@ -24,23 +26,9 @@ def message_edited_handler(message):
 def new_user_added(message):
     try:
         if message.chat.type == 'group':
-            try:
-                chat = Chat.get(Chat.chat_id == message.chat.id)
-            except DoesNotExist as e:
-                logger.debug(msg=e.message)
-                chat = Chat.create(chat_id=message.chat.id, google_calendar_id="".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5)), join_date=datetime.datetime.now())
-
+            bot_utils.add_user_in_db(user_id=message.new_chat_member.id, chat_id=message.chat.id)
             if message.new_chat_member.id == bot.get_me().id:
-                    logger.debug(msg='bot added in new chat group with id: ' + str(message.chat.id))
-            else:
-                try:
-                    user = User.get(User.user_id == message.new_chat_member.id)
-                    logger.debug(msg='user (id: ' + str(user.user_id) + ' ) already exists in bot DB')
-                    UserChat.create(user=user, chat=chat)
-                except DoesNotExist as e:
-                    user = User.create(user_id = message.new_chat_member.id, join_date=datetime.datetime.now())
-                    logger.debug(msg='new user (id: ' + str(user.user_id) + ' ) added in bot DB')
-                    UserChat.create(user=user, chat=chat)
+                bot.send_message(message.chat.id, config.bot_added_to_group_message)
         else:
             pass
     except Exception as e:
@@ -51,20 +39,7 @@ def new_user_added(message):
 def user_removed(message):
     try:
         if message.chat.type == 'group':
-            if message.left_chat_member.id == bot.get_me().id:
-                try:
-                    chat = Chat.get(Chat.chat_id == message.chat.id)
-                    chat.delete_instance()
-                    logger.debug("Bot removed from chat (id: " + str(message.chat.id) + ' )')
-                except DoesNotExist as e:
-                    logger.debug('Bot was removed from group (id: ' + str(message.chat.id) + ' ) that wasnt recorded in DB')
-            else:
-                try:
-                    user = User.get(User.user_id == message.left_chat_member.id)
-                    user.delete_instance()
-                    logger.debug("user (id: " + str(message.left_chat_member.id) + " ) removed from chat (id: " + str(message.chat.id) + ' )')
-                except DoesNotExist as e:
-                    logger.debug('From group was removed user (id: ' + str(message.left_chat_member.id) + ' ) that wasnt recorded in bot DB')
+            bot_utils.remove_user_from_db(message.left_chat_member.id, message.chat.id)
         else:
             pass
     except Exception as e:
@@ -101,7 +76,7 @@ def user_removed(message):
 def help_command_handler(message):
     try:
         if message.chat.type == 'group':
-            if message.text == "/help@" + bot.get_me().username:
+            if bot_utils.is_command_for_bot(cmd_str='help', message_text=message.text):
                 bot.send_message(message.chat.id, config.help_command_message)
             else:
                 return
@@ -114,7 +89,7 @@ def help_command_handler(message):
 @bot.message_handler(func=lambda message: True, commands=['start'])
 def start_command_handler(message):
     # TODO: implement start logic
-    if message.chat.type == 'group' and message.text == "/start@" + bot.get_me().username:
+    if message.chat.type == 'group' and bot_utils.is_command_for_bot(cmd_str='start', message_text=message.text):
         admins = bot.get_chat_administrators(message.chat.id)
         if any(chat_member.user.id == message.from_user.id for chat_member in admins):
             bot.send_message(message.chat.id, config.group_start_command_message)
