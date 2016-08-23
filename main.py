@@ -11,7 +11,7 @@ def create_tables():
     # Chat.create_table()
     # User.create_table()
     # CalendarEvent.create_table()
-    db.database.create_tables([Chat, User, CalendarEvent, UserChat], safe=True)
+    db.database.create_tables([Chat, User, CalendarEvent, Calendar, UserChat], safe=True)
 
 if __name__ == '__main__':
 
