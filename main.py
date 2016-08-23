@@ -8,7 +8,10 @@ from bot_events import *
 
 
 def create_tables():
-    db.database.create_tables([Chat, User, CalendarEvent], safe=True)
+    # Chat.create_table()
+    # User.create_table()
+    # CalendarEvent.create_table()
+    db.database.create_tables([Chat, User, CalendarEvent, UserChat], safe=True)
 
 if __name__ == '__main__':
 

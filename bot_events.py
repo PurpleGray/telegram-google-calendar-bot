@@ -6,6 +6,9 @@ from DB.models import  *
 
 from telebot import *
 
+import random
+
+import string
 
 '''replied_messages = {}
 
@@ -21,23 +24,27 @@ def message_edited_handler(message):
 def new_user_added(message):
     try:
         if message.chat.type == 'group':
-            chat, created = Chat.get_or_create(chat_id=message.chat.id, google_calendar_id="test_g_id")
+            try:
+                chat = Chat.get(Chat.chat_id == message.chat.id)
+            except DoesNotExist as e:
+                logger.debug(msg=e.message)
+                chat = Chat.create(chat_id=message.chat.id, google_calendar_id="".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5)), join_date=datetime.datetime.now())
+
             if message.new_chat_member.id == bot.get_me().id:
-                if chat != None and created == False:
-                    # probably should delete old record about this chat and create new
-                    raise (Exception('Not possible thing happened: bot added in new group which already exsists in bot DB :O'))
-                elif chat != None and created == True:
                     logger.debug(msg='bot added in new chat group with id: ' + str(message.chat.id))
             else:
-                user, created = User.get_or_create(user_id=message.new_chat_member.id, chat_membership=chat)
-                if user != None and created == False:
+                try:
+                    user = User.get(User.user_id == message.new_chat_member.id)
                     logger.debug(msg='user (id: ' + str(user.user_id) + ' ) already exists in bot DB')
-                elif user != None and created == True:
+                    UserChat.create(user=user, chat=chat)
+                except DoesNotExist as e:
+                    user = User.create(user_id = message.new_chat_member.id, join_date=datetime.datetime.now())
                     logger.debug(msg='new user (id: ' + str(user.user_id) + ' ) added in bot DB')
+                    UserChat.create(user=user, chat=chat)
         else:
             pass
     except Exception as e:
-        logger.debug(msg=e)
+        logger.debug(msg=e.message)
 
 
 @bot.message_handler(func=lambda message: True, content_types=['left_chat_member'])
@@ -61,8 +68,34 @@ def user_removed(message):
         else:
             pass
     except Exception as e:
-        logger.debug(e)
+        logger.debug(e.message)
 
+
+# @bot.message_handler(func=lambda message: True, commands=['show_users'])
+# def show_users(message):
+#     try:
+#         for user in User.select():
+#            bot.send_message(message.chat.id, "USER: (id: " + str(user.user_id) + " , join_date: " + str(user.join_date))
+#     except Exception as e:
+#         logger.debug(e.message)
+#
+# @bot.message_handler(func=lambda message: True, commands=['show_chats'])
+# def show_users(message):
+#     try:
+#         for chat in Chat.select():
+#            bot.send_message(message.chat.id, "CHAT: (id: " + str(chat.chat_id) + " , join_date: " + str(chat.join_date) + " , G Calendar id: x" + str(chat.google_calendar_id))
+#     except Exception as e:
+#         logger.debug(e.message)
+#
+# @bot.message_handler(func=lambda message: True, commands=['in_chat'])
+# def show_in_chat(message):
+#     try:
+#         users = (User.select().join(UserChat).join(Chat).where(Chat.chat_id == message.chat.id))
+#         for user in users:
+#             bot.send_message(message.chat.id, 'USER ID:' + str(user.user_id))
+#
+#     except Exception as e:
+#         logger.debug(e.message)
 
 @bot.message_handler(func=lambda message: True, commands=['help'])
 def help_command_handler(message):
@@ -76,7 +109,7 @@ def help_command_handler(message):
             bot.send_message(message.chat.id, config.help_command_message)
 
     except Exception as e:
-        logger.debug(e)
+        logger.debug(e.message)
 
 @bot.message_handler(func=lambda message: True, commands=['start'])
 def start_command_handler(message):
@@ -91,7 +124,7 @@ def start_command_handler(message):
 @bot.message_handler(func=lambda message: True, content_types=["text"])
 def message_income_handler(message):
     if message.chat.type == 'group':
-        print "kek"
+        pass
     '''event_string = bot_event_handler.parse_event(message.text.encode('utf-8'))
     bot_msg = current_bot.reply_to(message, "Recognized event:\n" + event_string)'''
     pass
@@ -114,4 +147,4 @@ def default_query(inline_query):
     try:
         bot.answer_inline_query(inline_query.id, hint_articles)
     except Exception as e:
-        logger.debug(e)
+        logger.debug(e.message)
