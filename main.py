@@ -11,7 +11,9 @@ def create_tables():
     # Chat.create_table()
     # User.create_table()
     # CalendarEvent.create_table()
-    db.database.create_tables([Chat, User, CalendarEvent, Calendar, UserChat], safe=True)
+    ChatsUsers = Chat.users.get_through_model()
+
+    db.database.create_tables([Chat, User, CalendarEvent, Calendar, ChatsUsers], safe=True)
 
 if __name__ == '__main__':
 

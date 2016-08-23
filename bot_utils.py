@@ -15,6 +15,15 @@ def is_command_for_bot(cmd_str, message_text):
     else:
         return False
 
+def print_all_chats_from_db(chat_id):
+    out_str = ""
+    for chat in Chat.select():
+        out_str = "CHAT (ID: " + str(chat.chat_id) + " )\n"
+        for user in chat.users:
+            out_str += "USER (ID: " + str(user.user_id) + " )\n"
+        bot.send_message(chat_id=chat_id, text=out_str)
+        out_str = ""
+
 def add_user_in_db(user_id, chat_id):
     try:
         # Is current chat in DB?
@@ -22,8 +31,9 @@ def add_user_in_db(user_id, chat_id):
     except DoesNotExist as e:
         logger.debug(msg=e.message)
         # Create one
-        chat = Chat.create(chat_id=chat_id, google_calendar_id="".join(
-            random.choice(string.ascii_uppercase + string.digits) for _ in range(5)), join_date=datetime.datetime.now())
+        chat = Chat.insert(chat_id=chat_id, join_date=datetime.datetime.now())
+        chat.execute()
+        # chat = Chat.create(chat_id=chat_id, join_date=datetime.datetime.now())
 
     # If joined user is our bot do nothing
     if user_id == bot.get_me().id:
@@ -34,34 +44,38 @@ def add_user_in_db(user_id, chat_id):
             user = User.get(User.user_id == user_id)
             logger.debug(msg='user (id: ' + str(user.user_id) + ' ) already exists in bot DB')
             # Is connection already exist
-            try:
-                userchat = UserChat.get(UserChat.chat.chat_id == chat_id & UserChat.user.user_id == user_id)
-            except DoesNotExist as e:
-                # If not, make one
-                UserChat.create(chat=chat, user=user)
+            if(all(chat_user.user_id != user.user_id for chat_user in chat.users)):
+                logger.debug(msg='user (id: ' + str(user.user_id) + ' already exist in DB, but connected with chat id: ' + str(chat.chat_id))
+                chat.users.add(user)
+            # If not, make one
+                # chat.users.add(user)
         except DoesNotExist as e:
             # If not, create user
             user = User.create(user_id=user_id, join_date=datetime.datetime.now())
             logger.debug(msg='new user (id: ' + str(user.user_id) + ' ) added in bot DB')
             # And new connection
-            UserChat.create(user=user, chat=chat)
+            chat.users.add(user)
 
+def remove_user_from_chat_db(user_id, chat_id):
+    try:
+        chat = Chat.get(Chat.chat_id == chat_id)
 
-def remove_user_from_db(user_id, chat_id):
-    if user_id== bot.get_me().id:
-        try:
-            chat = Chat.get(Chat.chat_id == chat_id)
+        if user_id == bot.get_me().id:
             chat.delete_instance()
             logger.debug("Bot removed from chat (id: " + str(chat_id) + ' )')
-        except DoesNotExist as e:
-            logger.debug('Bot was removed from group (id: ' + str(chat_id) + ' ) that wasnt recorded in DB')
-    else:
+
         try:
             user = User.get(User.user_id == user_id)
-            user.delete_instance()
+
+            chat.users.remove(user)
             logger.debug("user (id: " + str(user_id) + " ) removed from chat (id: " + str(
                 chat_id) + ' )')
+
         except DoesNotExist as e:
-            logger.debug('From group was removed user (id: ' + str(
-                user_id) + ' ) that wasnt recorded in bot DB')
+            logger.debug('From group was removed user (id: ' + str(user_id) + " ) that wasnt recorded in bot DB")
+
+    except DoesNotExist as e:
+        logger.debug('From group was removed user (id: ' + str(
+            user_id) + ' ) that wasnt recorded in bot DB')
+
 

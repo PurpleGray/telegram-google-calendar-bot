@@ -39,7 +39,7 @@ def new_user_added(message):
 def user_removed(message):
     try:
         if message.chat.type == 'group':
-            bot_utils.remove_user_from_db(message.left_chat_member.id, message.chat.id)
+            bot_utils.remove_user_from_chat_db(message.left_chat_member.id, message.chat.id)
         else:
             pass
     except Exception as e:
@@ -72,6 +72,13 @@ def user_removed(message):
 #     except Exception as e:
 #         logger.debug(e.message)
 
+@bot.message_handler(func=lambda message: True, commands=['show_all'])
+def print_all_command_handler(message):
+    try:
+        bot_utils.print_all_chats_from_db(message.chat.id)
+    except Exception as e:
+        logger.debug(e.message)
+
 @bot.message_handler(func=lambda message: True, commands=['help'])
 def help_command_handler(message):
     try:
@@ -98,12 +105,34 @@ def start_command_handler(message):
 
 @bot.message_handler(func=lambda message: True, content_types=["text"])
 def message_income_handler(message):
-    if message.chat.type == 'group':
+    try:
+        if message.chat.type == 'group':
+            pass
+        else:
+            # Смотрим, есть ли юзер в одном из чатов, добавленных в БД
+            user_in_chats = []
+            for chat in Chat.select():
+                user_status = bot.get_chat_member(chat_id=chat.chat_id, user_id=message.from_user.id).status
+                if user_status != 'left' and user_status != 'kicked':
+                    user_in_chats.append(chat)
+            if len(user_in_chats) != 0:
+                bot.send_message(message.chat.id, 'Youre in one of the chats!')
+            else:
+                bot.send_message(message.chat.id, 'Youre not in chats')
+            # Если есть, то пытаемся распознать событие
+                # Если удалось распознать эвент
+                    # То отправляем распознанное событие и спрашиваем, все ли так
+                        # Если все ок, то добавляем эвент в календарь и завершаем разговор
+                        # Если не ок, то просим ввести заново
+                # Если не удалось, то пишем, что не удалось и говорим если что обратиться к /help
+                # Если все так, то добавляем эвент
+            # Если нет, то отвечаем, что не удалось его найти ни в одной из групп, где есть бот
+            pass
+        '''event_string = bot_event_handler.parse_event(message.text.encode('utf-8'))
+        bot_msg = current_bot.reply_to(message, "Recognized event:\n" + event_string)'''
         pass
-    '''event_string = bot_event_handler.parse_event(message.text.encode('utf-8'))
-    bot_msg = current_bot.reply_to(message, "Recognized event:\n" + event_string)'''
-    pass
-
+    except Exception as e:
+        logger.debug(e.message)
     # replied_messages[message.message_id] = bot_msg.message_id
 
 
