@@ -8,6 +8,8 @@ from telebot import *
 
 import bot_utils
 
+import bot_event_handler
+
 import random
 
 import string
@@ -115,11 +117,13 @@ def message_income_handler(message):
                 user_status = bot.get_chat_member(chat_id=chat.chat_id, user_id=message.from_user.id).status
                 if user_status != 'left' and user_status != 'kicked':
                     user_in_chats.append(chat)
-            if len(user_in_chats) != 0:
-                bot.send_message(message.chat.id, 'Youre in one of the chats!')
-            else:
-                bot.send_message(message.chat.id, 'Youre not in chats')
             # Если есть, то пытаемся распознать событие
+            if len(user_in_chats) != 0:
+                event_string = bot_event_handler.parse_event(message.text.encode('utf-8'))
+                bot.reply_to(message, "Recognized event:\n" + event_string)
+            else:
+                bot.send_message(message.chat.id, 'Youre not in one of my group chats')
+            
                 # Если удалось распознать эвент
                     # То отправляем распознанное событие и спрашиваем, все ли так
                         # Если все ок, то добавляем эвент в календарь и завершаем разговор
@@ -128,8 +132,7 @@ def message_income_handler(message):
                 # Если все так, то добавляем эвент
             # Если нет, то отвечаем, что не удалось его найти ни в одной из групп, где есть бот
             pass
-        '''event_string = bot_event_handler.parse_event(message.text.encode('utf-8'))
-        bot_msg = current_bot.reply_to(message, "Recognized event:\n" + event_string)'''
+        ''''''
         pass
     except Exception as e:
         logger.debug(e.message)

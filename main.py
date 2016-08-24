@@ -18,12 +18,10 @@ def create_tables():
 if __name__ == '__main__':
 
     bot.remove_webhook()
-    bot.set_webhook(url=config.WEBHOOK_URL_BASE + config.WEBHOOK_URL_PATH,
-                    certificate=open(config.WEBHOOK_SSL_CERT, 'r'))
+    bot.set_webhook(url=config.WEBHOOK_URL_BASE + config.WEBHOOK_URL_PATH)
 
     create_tables()
 
     app.run(host=config.WEBHOOK_LISTEN,
-            port=config.WEBHOOK_PORT,
-            ssl_context=(config.WEBHOOK_SSL_CERT, config.WEBHOOK_SSL_PRIV),
+            port=config.WEBHOOK_LOCAL_PORT,
             debug=False)
